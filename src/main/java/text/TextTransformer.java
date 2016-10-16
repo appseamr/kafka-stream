@@ -3,25 +3,25 @@ package text;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.integration.annotation.Transformer;
 
+import java.io.UnsupportedEncodingException;
+
 @EnableBinding(TextProcessor.class)
 public class TextTransformer {
 
     @Transformer(inputChannel = TextProcessor.INPUT, outputChannel = TextProcessor.OUTPUT)
-    public Object transform(String text) {
+    public Object transform(byte[] textInBytes) {
 
-        text = convert(text);
+        String text = serialize(textInBytes);
 
         return countWords(text) + " words";
     }
 
-    private String convert(String text) {
-        if (text.isEmpty())
+    private String serialize(byte[] textInBytes) {
+        try {
+            return new String(textInBytes, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
             return "";
-        String result = "";
-        for (String letter : text.split(",")) {
-            result += (char) Integer.parseInt(letter, 10);
         }
-        return result;
     }
 
     private int countWords(String text) {
